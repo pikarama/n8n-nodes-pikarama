@@ -1,13 +1,32 @@
 {
   "name": "n8n-nodes-pikarama",
-  "version": "0.1.0",
-  "description": "n8n nodes for Pikarama - group decision making with karma",
-  "keywords": ["n8n", "n8n-node", "pikarama", "voting", "decisions"],
+  "version": "0.2.0",
+  "description": "n8n community node for Pikarama - fair group decision making with karma-weighted voting",
+  "keywords": [
+    "n8n",
+    "n8n-node",
+    "n8n-community-node-package",
+    "pikarama",
+    "voting",
+    "decisions",
+    "polls",
+    "karma",
+    "group-decisions",
+    "team-voting"
+  ],
   "license": "MIT",
-  "author": "Pikarama",
+  "author": {
+    "name": "Pikarama",
+    "email": "support@pikarama.com",
+    "url": "https://www.pikarama.com"
+  },
+  "homepage": "https://www.pikarama.com",
   "repository": {
     "type": "git",
     "url": "https://github.com/musketyr/n8n-nodes-pikarama.git"
+  },
+  "bugs": {
+    "url": "https://github.com/musketyr/n8n-nodes-pikarama/issues"
   },
   "main": "dist/index.js",
   "scripts": {

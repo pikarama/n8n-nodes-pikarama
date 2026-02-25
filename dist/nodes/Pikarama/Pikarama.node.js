@@ -57,17 +57,36 @@ class Pikarama {
                     ],
                     default: 'create',
                 },
-                // Event: Create
+                // Event: Create - Group selector (for filtering topics)
                 {
-                    displayName: 'Topic ID',
-                    name: 'topicId',
-                    type: 'string',
+                    displayName: 'Group',
+                    name: 'groupId',
+                    type: 'options',
+                    typeOptions: {
+                        loadOptionsMethod: 'getGroups',
+                    },
                     required: true,
                     displayOptions: {
                         show: { resource: ['event'], operation: ['create'] },
                     },
                     default: '',
-                    description: 'The topic group ID for the event',
+                    description: 'Select the group containing the topic',
+                },
+                // Event: Create - Topic selector (depends on group)
+                {
+                    displayName: 'Topic',
+                    name: 'topicId',
+                    type: 'options',
+                    typeOptions: {
+                        loadOptionsMethod: 'getTopics',
+                        loadOptionsDependsOn: ['groupId'],
+                    },
+                    required: true,
+                    displayOptions: {
+                        show: { resource: ['event'], operation: ['create'] },
+                    },
+                    default: '',
+                    description: 'The topic for this event',
                 },
                 {
                     displayName: 'Event Name',
@@ -80,6 +99,21 @@ class Pikarama {
                     default: '',
                     placeholder: 'Where should we eat tonight?',
                     description: 'The question or decision to make',
+                },
+                // Participants selector (depends on group)
+                {
+                    displayName: 'Participants',
+                    name: 'attendees',
+                    type: 'multiOptions',
+                    typeOptions: {
+                        loadOptionsMethod: 'getGroupMembers',
+                        loadOptionsDependsOn: ['groupId'],
+                    },
+                    displayOptions: {
+                        show: { resource: ['event'], operation: ['create'] },
+                    },
+                    default: [],
+                    description: 'Select participants (leave empty for all group members)',
                 },
                 {
                     displayName: 'Is Poll',
@@ -105,17 +139,20 @@ class Pikarama {
                     placeholder: 'Add option',
                     description: 'Predefined options for the poll (minimum 2)',
                 },
-                // Event: Get / Get Many / Submit / Vote / Advance / Cancel
+                // Event: Get - use dropdown
                 {
-                    displayName: 'Event ID',
+                    displayName: 'Event',
                     name: 'eventId',
-                    type: 'string',
+                    type: 'options',
+                    typeOptions: {
+                        loadOptionsMethod: 'getEvents',
+                    },
                     required: true,
                     displayOptions: {
                         show: { resource: ['event'], operation: ['get', 'submit', 'vote', 'advance', 'cancel'] },
                     },
                     default: '',
-                    description: 'The event ID',
+                    description: 'Select the event',
                 },
                 // Event: Get Many filters
                 {
@@ -146,31 +183,35 @@ class Pikarama {
                 },
                 // Event: Submit
                 {
-                    displayName: 'Submission Title',
-                    name: 'title',
-                    type: 'string',
-                    required: true,
-                    displayOptions: {
-                        show: { resource: ['event'], operation: ['submit'] },
-                    },
-                    default: '',
-                    placeholder: 'Pizza from Dominos',
-                    description: 'Your pick/submission',
-                },
-                // Event: Vote
-                {
-                    displayName: 'Submission IDs',
-                    name: 'submissionIds',
+                    displayName: 'Submission Titles',
+                    name: 'titles',
                     type: 'string',
                     typeOptions: {
                         multipleValues: true,
                     },
                     required: true,
                     displayOptions: {
+                        show: { resource: ['event'], operation: ['submit'] },
+                    },
+                    default: [],
+                    placeholder: 'Add submission',
+                    description: 'Your picks/submissions (up to 3)',
+                },
+                // Event: Vote - Submissions selector
+                {
+                    displayName: 'Submissions',
+                    name: 'submissionIds',
+                    type: 'multiOptions',
+                    typeOptions: {
+                        loadOptionsMethod: 'getSubmissions',
+                        loadOptionsDependsOn: ['eventId'],
+                    },
+                    required: true,
+                    displayOptions: {
                         show: { resource: ['event'], operation: ['vote'] },
                     },
                     default: [],
-                    description: 'IDs of submissions to vote for',
+                    description: 'Select submissions to vote for',
                 },
                 // ==================== GROUP OPERATIONS ====================
                 {
@@ -189,17 +230,20 @@ class Pikarama {
                     ],
                     default: 'getMany',
                 },
-                // Group: Get / Topics / Members
+                // Group: Get / Topics / Members - use dropdown
                 {
-                    displayName: 'Group ID',
-                    name: 'groupId',
-                    type: 'string',
+                    displayName: 'Group',
+                    name: 'groupIdSelect',
+                    type: 'options',
+                    typeOptions: {
+                        loadOptionsMethod: 'getGroups',
+                    },
                     required: true,
                     displayOptions: {
                         show: { resource: ['group'], operation: ['get', 'getTopics', 'getMembers'] },
                     },
                     default: '',
-                    description: 'The group ID',
+                    description: 'Select the group',
                 },
                 // ==================== KARMA OPERATIONS ====================
                 {
@@ -216,16 +260,125 @@ class Pikarama {
                     default: 'get',
                 },
                 {
-                    displayName: 'Group ID',
+                    displayName: 'Group',
                     name: 'karmaGroupId',
-                    type: 'string',
+                    type: 'options',
+                    typeOptions: {
+                        loadOptionsMethod: 'getGroups',
+                    },
                     displayOptions: {
                         show: { resource: ['karma'], operation: ['get'] },
                     },
                     default: '',
-                    description: 'Filter karma by group (optional)',
+                    description: 'Filter karma by group (optional - leave empty for all)',
                 },
             ],
+        };
+        this.methods = {
+            loadOptions: {
+                async getGroups() {
+                    const credentials = await this.getCredentials('pikaramaApi');
+                    const baseUrl = credentials.baseUrl;
+                    const response = await fetch(`${baseUrl}/api/v1/groups`, {
+                        headers: {
+                            'Authorization': `Bearer ${credentials.apiToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    if (!response.ok) {
+                        return [{ name: 'Error loading groups', value: '' }];
+                    }
+                    const data = await response.json();
+                    return (data.groups || []).map((g) => ({
+                        name: g.name,
+                        value: g.id,
+                    }));
+                },
+                async getTopics() {
+                    const credentials = await this.getCredentials('pikaramaApi');
+                    const baseUrl = credentials.baseUrl;
+                    const groupId = this.getCurrentNodeParameter('groupId');
+                    if (!groupId) {
+                        return [{ name: 'Select a group first', value: '' }];
+                    }
+                    const response = await fetch(`${baseUrl}/api/v1/groups/${groupId}/topics`, {
+                        headers: {
+                            'Authorization': `Bearer ${credentials.apiToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    if (!response.ok) {
+                        return [{ name: 'Error loading topics', value: '' }];
+                    }
+                    const data = await response.json();
+                    return (data.topics || []).map((t) => ({
+                        name: t.name,
+                        value: t.id,
+                    }));
+                },
+                async getEvents() {
+                    const credentials = await this.getCredentials('pikaramaApi');
+                    const baseUrl = credentials.baseUrl;
+                    const response = await fetch(`${baseUrl}/api/v1/events?status=submitting,voting&limit=50`, {
+                        headers: {
+                            'Authorization': `Bearer ${credentials.apiToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    if (!response.ok) {
+                        return [{ name: 'Error loading events', value: '' }];
+                    }
+                    const data = await response.json();
+                    return (data.events || []).map((e) => ({
+                        name: `${e.name} (${e.status})`,
+                        value: e.id,
+                    }));
+                },
+                async getGroupMembers() {
+                    const credentials = await this.getCredentials('pikaramaApi');
+                    const baseUrl = credentials.baseUrl;
+                    const groupId = this.getCurrentNodeParameter('groupId');
+                    if (!groupId) {
+                        return [{ name: 'Select a group first', value: '' }];
+                    }
+                    const response = await fetch(`${baseUrl}/api/v1/groups/${groupId}/members`, {
+                        headers: {
+                            'Authorization': `Bearer ${credentials.apiToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    if (!response.ok) {
+                        return [{ name: 'Error loading members', value: '' }];
+                    }
+                    const data = await response.json();
+                    return (data.members || []).map((m) => ({
+                        name: m.name || m.userId,
+                        value: m.userId,
+                    }));
+                },
+                async getSubmissions() {
+                    const credentials = await this.getCredentials('pikaramaApi');
+                    const baseUrl = credentials.baseUrl;
+                    const eventId = this.getCurrentNodeParameter('eventId');
+                    if (!eventId) {
+                        return [{ name: 'Select an event first', value: '' }];
+                    }
+                    const response = await fetch(`${baseUrl}/api/v1/events/${eventId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${credentials.apiToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    if (!response.ok) {
+                        return [{ name: 'Error loading submissions', value: '' }];
+                    }
+                    const data = await response.json();
+                    return (data.submissions || []).map((s) => ({
+                        name: `${s.title} (by ${s.authorName})`,
+                        value: s.id,
+                    }));
+                },
+            },
         };
     }
     async execute() {
@@ -247,11 +400,15 @@ class Pikarama {
                         endpoint = '/api/v1/events';
                         method = 'POST';
                         const isPoll = this.getNodeParameter('isPoll', i);
+                        const attendees = this.getNodeParameter('attendees', i, []);
                         body = {
                             topicId: this.getNodeParameter('topicId', i),
                             name: this.getNodeParameter('name', i),
                             isPoll,
                         };
+                        if (attendees.length > 0) {
+                            body.attendees = attendees;
+                        }
                         if (isPoll) {
                             body.pollOptions = this.getNodeParameter('pollOptions', i);
                         }
@@ -268,9 +425,27 @@ class Pikarama {
                     }
                     else if (operation === 'submit') {
                         const eventId = this.getNodeParameter('eventId', i);
-                        endpoint = `/api/v1/events/${eventId}/submit`;
-                        method = 'POST';
-                        body = { title: this.getNodeParameter('title', i) };
+                        const titles = this.getNodeParameter('titles', i);
+                        // Submit each title separately and collect results
+                        const submissions = [];
+                        for (const title of titles) {
+                            const submitUrl = new URL(`/api/v1/events/${eventId}/submit`, baseUrl);
+                            const submitResponse = await fetch(submitUrl.toString(), {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${credentials.apiToken}`,
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ title }),
+                            });
+                            const submitData = await submitResponse.json();
+                            if (!submitResponse.ok) {
+                                throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Submit failed for "${title}": ${submitData.message || 'Unknown error'}`, { itemIndex: i });
+                            }
+                            submissions.push(submitData);
+                        }
+                        returnData.push({ json: { submissions } });
+                        continue; // Skip normal request flow
                     }
                     else if (operation === 'vote') {
                         const eventId = this.getNodeParameter('eventId', i);
@@ -292,18 +467,18 @@ class Pikarama {
                 // ==================== GROUP ====================
                 if (resource === 'group') {
                     if (operation === 'get') {
-                        const groupId = this.getNodeParameter('groupId', i);
+                        const groupId = this.getNodeParameter('groupIdSelect', i);
                         endpoint = `/api/v1/groups/${groupId}`;
                     }
                     else if (operation === 'getMany') {
                         endpoint = '/api/v1/groups';
                     }
                     else if (operation === 'getTopics') {
-                        const groupId = this.getNodeParameter('groupId', i);
+                        const groupId = this.getNodeParameter('groupIdSelect', i);
                         endpoint = `/api/v1/groups/${groupId}/topics`;
                     }
                     else if (operation === 'getMembers') {
-                        const groupId = this.getNodeParameter('groupId', i);
+                        const groupId = this.getNodeParameter('groupIdSelect', i);
                         endpoint = `/api/v1/groups/${groupId}/members`;
                     }
                 }
