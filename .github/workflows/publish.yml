@@ -5,14 +5,12 @@ on:
     types: [published]
 
 # NOTE: NPM_TOKEN secret expires every 7 days - regenerate at npmjs.com if publish fails with auth error
+# NOTE: --provenance removed because repo is private (provenance requires public repos)
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: npm-publish
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       
@@ -28,6 +26,6 @@ jobs:
         run: npm run build
       
       - name: Publish to npm
-        run: npm publish --provenance --access public
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
