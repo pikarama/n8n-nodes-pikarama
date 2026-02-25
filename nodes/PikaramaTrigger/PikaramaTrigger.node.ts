@@ -37,14 +37,6 @@ export class PikaramaTrigger implements INodeType {
 		],
 		properties: [
 			{
-				displayName: 'Group',
-				name: 'groupId',
-				type: 'string',
-				required: true,
-				default: '',
-				description: 'The group ID to listen for events from. Get this from the Pikarama web app URL.',
-			},
-			{
 				displayName: 'Events',
 				name: 'events',
 				type: 'multiOptions',
@@ -52,11 +44,30 @@ export class PikaramaTrigger implements INodeType {
 				options: [
 					{ name: 'Event Created', value: 'event.created', description: 'Triggered when a new event is created' },
 					{ name: 'Event Closed', value: 'event.closed', description: 'Triggered when an event is completed' },
-					{ name: 'Event Voted', value: 'event.voted', description: 'Triggered when a vote is cast' },
+					{ name: 'Vote Cast', value: 'event.voted', description: 'Triggered when a vote is cast' },
 					{ name: 'Submission Added', value: 'submission.added', description: 'Triggered when a submission is added' },
 				],
 				default: ['event.created', 'event.closed'],
 				description: 'Which events to listen for',
+			},
+			{
+				displayName: 'Filter by Groups',
+				name: 'filterByGroups',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to only receive events from specific groups (default: all groups)',
+			},
+			{
+				displayName: 'Group IDs',
+				name: 'groupIds',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						filterByGroups: [true],
+					},
+				},
+				description: 'Comma-separated list of group IDs to filter (get IDs from Pikarama web app URL)',
 			},
 		],
 	};
@@ -67,10 +78,9 @@ export class PikaramaTrigger implements INodeType {
 				const webhookUrl = this.getNodeWebhookUrl('default') as string;
 				const credentials = await this.getCredentials('pikaramaApi');
 				const baseUrl = credentials.baseUrl as string;
-				const groupId = this.getNodeParameter('groupId') as string;
 
 				try {
-					const response = await fetch(`${baseUrl}/api/v1/groups/${groupId}/webhooks`, {
+					const response = await fetch(`${baseUrl}/api/v1/webhooks`, {
 						headers: {
 							'Authorization': `Bearer ${credentials.apiToken}`,
 							'Content-Type': 'application/json',
@@ -94,10 +104,19 @@ export class PikaramaTrigger implements INodeType {
 				const webhookUrl = this.getNodeWebhookUrl('default') as string;
 				const credentials = await this.getCredentials('pikaramaApi');
 				const baseUrl = credentials.baseUrl as string;
-				const groupId = this.getNodeParameter('groupId') as string;
 				const events = this.getNodeParameter('events') as string[];
+				const filterByGroups = this.getNodeParameter('filterByGroups') as boolean;
+				
+				// Parse group IDs if filtering
+				let groupIds: string[] | null = null;
+				if (filterByGroups) {
+					const groupIdsStr = this.getNodeParameter('groupIds') as string;
+					if (groupIdsStr) {
+						groupIds = groupIdsStr.split(',').map(id => id.trim()).filter(id => id);
+					}
+				}
 
-				const response = await fetch(`${baseUrl}/api/v1/groups/${groupId}/webhooks`, {
+				const response = await fetch(`${baseUrl}/api/v1/webhooks`, {
 					method: 'POST',
 					headers: {
 						'Authorization': `Bearer ${credentials.apiToken}`,
@@ -106,6 +125,7 @@ export class PikaramaTrigger implements INodeType {
 					body: JSON.stringify({
 						url: webhookUrl,
 						events,
+						groupIds,
 					}),
 				});
 
@@ -158,7 +178,7 @@ export class PikaramaTrigger implements INodeType {
 					delete webhookData.webhookSecret;
 
 					return true;
-				} catch (error) {
+				} catch {
 					// If deletion fails, still clean up stored data to prevent stale state
 					delete webhookData.webhookId;
 					delete webhookData.webhookSecret;
