@@ -23,10 +23,10 @@
   "homepage": "https://www.pikarama.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/musketyr/n8n-nodes-pikarama.git"
+    "url": "https://github.com/pikarama/n8n-nodes-pikarama.git"
   },
   "bugs": {
-    "url": "https://github.com/musketyr/n8n-nodes-pikarama/issues"
+    "url": "https://github.com/pikarama/n8n-nodes-pikarama/issues"
   },
   "main": "dist/index.js",
   "scripts": {
