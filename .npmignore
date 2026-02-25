@@ -1,0 +1,6 @@
+*.ts
+!dist/**
+tsconfig.json
+gulpfile.js
+.git
+.gitignore
