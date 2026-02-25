@@ -1,0 +1,42 @@
+{
+  "name": "n8n-nodes-pikarama",
+  "version": "0.1.0",
+  "description": "n8n nodes for Pikarama - group decision making with karma",
+  "keywords": ["n8n", "n8n-node", "pikarama", "voting", "decisions"],
+  "license": "MIT",
+  "author": "Pikarama",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/musketyr/n8n-nodes-pikarama.git"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "lint": "eslint . --ext .ts",
+    "lintfix": "eslint . --ext .ts --fix",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/PikaramaApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Pikarama/Pikarama.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^8.0.0",
+    "gulp": "^4.0.2",
+    "n8n-workflow": "^1.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
