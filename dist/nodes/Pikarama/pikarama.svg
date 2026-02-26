@@ -1,6 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="48" fill="#1E3A5F"/>
-  <path d="M50 10 A40 40 0 0 1 50 90 A20 20 0 0 1 50 50 A20 20 0 0 0 50 10" fill="#E0F2FE"/>
-  <circle cx="50" cy="30" r="8" fill="#1E3A5F"/>
-  <circle cx="50" cy="70" r="8" fill="#E0F2FE"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A5F"/>
+      <stop offset="100%" stop-color="#0F1D30"/>
+    </linearGradient>
+    <linearGradient id="fg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE"/>
+      <stop offset="100%" stop-color="#BAE6FD"/>
+    </linearGradient>
+  </defs>
+  <!-- Gradient version - circle only -->
+  <circle cx="256" cy="256" r="250" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="230" fill="url(#fg)"/>
+  <circle cx="256" cy="256" r="220" fill="url(#bg)"/>
+  <path d="M 256,36 A 220,220 0 0,1 256,476 A 110,110 0 0,1 256,256 A 110,110 0 0,0 256,36 Z" fill="url(#fg)" stroke="url(#fg)" stroke-width="2"/>
+  <path d="M 256,94 A 52,52 0 0,1 256,198 Z" fill="url(#fg)"/>
 </svg>
