@@ -57,18 +57,43 @@ class PikaramaTrigger {
                     description: 'Whether to only receive events from specific groups (default: all groups)',
                 },
                 {
-                    displayName: 'Group IDs',
+                    displayName: 'Groups',
                     name: 'groupIds',
-                    type: 'string',
-                    default: '',
+                    type: 'multiOptions',
+                    typeOptions: {
+                        loadOptionsMethod: 'getGroups',
+                    },
+                    default: [],
                     displayOptions: {
                         show: {
                             filterByGroups: [true],
                         },
                     },
-                    description: 'Comma-separated list of group IDs to filter (get IDs from Pikarama web app URL)',
+                    description: 'Select groups to filter events (leave empty for all groups)',
                 },
             ],
+        };
+        this.methods = {
+            loadOptions: {
+                async getGroups() {
+                    const credentials = await this.getCredentials('pikaramaApi');
+                    const baseUrl = credentials.baseUrl;
+                    const response = await fetch(`${baseUrl}/api/v1/groups`, {
+                        headers: {
+                            'Authorization': `Bearer ${credentials.apiToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    if (!response.ok) {
+                        return [];
+                    }
+                    const data = await response.json();
+                    return (data.groups || []).map((g) => ({
+                        name: g.name,
+                        value: g.id,
+                    }));
+                },
+            },
         };
         this.webhookMethods = {
             default: {
@@ -100,12 +125,12 @@ class PikaramaTrigger {
                     const baseUrl = credentials.baseUrl;
                     const events = this.getNodeParameter('events');
                     const filterByGroups = this.getNodeParameter('filterByGroups');
-                    // Parse group IDs if filtering
+                    // Get group IDs if filtering
                     let groupIds = null;
                     if (filterByGroups) {
-                        const groupIdsStr = this.getNodeParameter('groupIds');
-                        if (groupIdsStr) {
-                            groupIds = groupIdsStr.split(',').map(id => id.trim()).filter(id => id);
+                        const selectedGroups = this.getNodeParameter('groupIds');
+                        if (selectedGroups && selectedGroups.length > 0) {
+                            groupIds = selectedGroups;
                         }
                     }
                     const response = await fetch(`${baseUrl}/api/v1/webhooks`, {
