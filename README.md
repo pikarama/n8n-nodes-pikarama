@@ -55,6 +55,44 @@ To use this node, you need a Pikarama API token:
 |-----------|-------------|
 | **Get** | Get karma statistics, optionally filtered by group |
 
+### User
+
+| Operation | Description |
+|-----------|-------------|
+| **Get Current** | Get info about the authenticated user (verify API token ownership) |
+
+## Pikarama Trigger
+
+The **Pikarama Trigger** node lets you receive real-time webhook events from Pikarama. When you activate a workflow, it automatically registers a webhook with Pikarama. When deactivated, it removes the webhook.
+
+### Events
+
+| Event | Description |
+|-------|-------------|
+| **Event Created** | Fires when a new event or poll is created |
+| **Event Closed** | Fires when an event is completed (winner chosen) |
+| **Vote Cast** | Fires when someone votes |
+| **Submission Added** | Fires when someone submits a pick |
+
+### Filter by Groups
+
+Optionally filter events to specific groups:
+
+1. Enable **Filter by Groups**
+2. Select one or more groups from the dropdown
+3. Only events from those groups will trigger the workflow
+
+Leave empty to receive events from all your groups.
+
+### Webhook Signature Verification
+
+All webhook payloads are signed with HMAC-SHA256. The trigger node automatically verifies the `X-Pikarama-Signature` header to ensure payloads are authentic.
+
+### Example: Notify Slack When Event Completes
+
+1. **Pikarama Trigger** → Events: "Event Closed"
+2. **Slack Node** → Send message: "🎉 Winner: {{ $json.data.winner.title }}"
+
 ## Features
 
 ### Dynamic Dropdowns
