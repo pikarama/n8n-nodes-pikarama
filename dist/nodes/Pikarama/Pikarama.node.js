@@ -34,6 +34,7 @@ class Pikarama {
                         { name: 'Event', value: 'event' },
                         { name: 'Group', value: 'group' },
                         { name: 'Karma', value: 'karma' },
+                        { name: 'User', value: 'user' },
                     ],
                     default: 'event',
                 },
@@ -272,6 +273,20 @@ class Pikarama {
                     default: '',
                     description: 'Filter karma by group (optional - leave empty for all)',
                 },
+                // ==================== USER OPERATIONS ====================
+                {
+                    displayName: 'Operation',
+                    name: 'operation',
+                    type: 'options',
+                    noDataExpression: true,
+                    displayOptions: {
+                        show: { resource: ['user'] },
+                    },
+                    options: [
+                        { name: 'Get Current', value: 'getCurrent', description: 'Get current user info (verify API token ownership)', action: 'Get current user' },
+                    ],
+                    default: 'getCurrent',
+                },
             ],
         };
         this.methods = {
@@ -490,6 +505,12 @@ class Pikarama {
                         if (groupId) {
                             qs = { groupId };
                         }
+                    }
+                }
+                // ==================== USER ====================
+                if (resource === 'user') {
+                    if (operation === 'getCurrent') {
+                        endpoint = '/api/v1/me';
                     }
                 }
                 // Make request

@@ -40,6 +40,7 @@ export class Pikarama implements INodeType {
 					{ name: 'Event', value: 'event' },
 					{ name: 'Group', value: 'group' },
 					{ name: 'Karma', value: 'karma' },
+					{ name: 'User', value: 'user' },
 				],
 				default: 'event',
 			},
@@ -287,6 +288,21 @@ export class Pikarama implements INodeType {
 				default: '',
 				description: 'Filter karma by group (optional - leave empty for all)',
 			},
+
+			// ==================== USER OPERATIONS ====================
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: { resource: ['user'] },
+				},
+				options: [
+					{ name: 'Get Current', value: 'getCurrent', description: 'Get current user info (verify API token ownership)', action: 'Get current user' },
+				],
+				default: 'getCurrent',
+			},
 		],
 	};
 
@@ -530,6 +546,13 @@ export class Pikarama implements INodeType {
 						if (groupId) {
 							qs = { groupId };
 						}
+					}
+				}
+
+				// ==================== USER ====================
+				if (resource === 'user') {
+					if (operation === 'getCurrent') {
+						endpoint = '/api/v1/me';
 					}
 				}
 
