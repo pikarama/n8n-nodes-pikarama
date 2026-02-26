@@ -45,7 +45,8 @@
       "dist/credentials/PikaramaApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Pikarama/Pikarama.node.js"
+      "dist/nodes/Pikarama/Pikarama.node.js",
+      "dist/nodes/PikaramaTrigger/PikaramaTrigger.node.js"
     ]
   },
   "devDependencies": {

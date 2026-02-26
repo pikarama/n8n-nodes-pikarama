@@ -23,6 +23,14 @@ class PikaramaApi {
                 default: 'https://www.pikarama.com',
                 description: 'Pikarama API base URL',
             },
+            {
+                displayName: 'Webhook Secret',
+                name: 'webhookSecret',
+                type: 'string',
+                typeOptions: { password: true },
+                default: '',
+                description: 'Webhook secret for signature verification (shown when webhook is created)',
+            },
         ];
         this.authenticate = {
             type: 'generic',
