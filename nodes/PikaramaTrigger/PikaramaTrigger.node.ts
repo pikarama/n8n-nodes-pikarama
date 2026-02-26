@@ -1,5 +1,7 @@
 import {
 	IHookFunctions,
+	ILoadOptionsFunctions,
+	INodePropertyOptions,
 	IWebhookFunctions,
 	IWebhookResponseData,
 	INodeType,
@@ -58,18 +60,47 @@ export class PikaramaTrigger implements INodeType {
 				description: 'Whether to only receive events from specific groups (default: all groups)',
 			},
 			{
-				displayName: 'Group IDs',
+				displayName: 'Groups',
 				name: 'groupIds',
-				type: 'string',
-				default: '',
+				type: 'multiOptions',
+				typeOptions: {
+					loadOptionsMethod: 'getGroups',
+				},
+				default: [],
 				displayOptions: {
 					show: {
 						filterByGroups: [true],
 					},
 				},
-				description: 'Comma-separated list of group IDs to filter (get IDs from Pikarama web app URL)',
+				description: 'Select groups to filter events (leave empty for all groups)',
 			},
 		],
+	};
+
+	methods = {
+		loadOptions: {
+			async getGroups(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const credentials = await this.getCredentials('pikaramaApi');
+				const baseUrl = credentials.baseUrl as string;
+
+				const response = await fetch(`${baseUrl}/api/v1/groups`, {
+					headers: {
+						'Authorization': `Bearer ${credentials.apiToken}`,
+						'Content-Type': 'application/json',
+					},
+				});
+
+				if (!response.ok) {
+					return [];
+				}
+
+				const data = await response.json() as { groups: Array<{ id: string; name: string }> };
+				return (data.groups || []).map((g) => ({
+					name: g.name,
+					value: g.id,
+				}));
+			},
+		},
 	};
 
 	webhookMethods = {
@@ -107,12 +138,12 @@ export class PikaramaTrigger implements INodeType {
 				const events = this.getNodeParameter('events') as string[];
 				const filterByGroups = this.getNodeParameter('filterByGroups') as boolean;
 				
-				// Parse group IDs if filtering
+				// Get group IDs if filtering
 				let groupIds: string[] | null = null;
 				if (filterByGroups) {
-					const groupIdsStr = this.getNodeParameter('groupIds') as string;
-					if (groupIdsStr) {
-						groupIds = groupIdsStr.split(',').map(id => id.trim()).filter(id => id);
+					const selectedGroups = this.getNodeParameter('groupIds') as string[];
+					if (selectedGroups && selectedGroups.length > 0) {
+						groupIds = selectedGroups;
 					}
 				}
 
