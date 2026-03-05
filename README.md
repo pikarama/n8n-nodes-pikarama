@@ -88,6 +88,40 @@ Leave empty to receive events from all your groups.
 
 All webhook payloads are signed with HMAC-SHA256. The trigger node automatically verifies the `X-Pikarama-Signature` header to ensure payloads are authentic.
 
+### Recurring Event Fields
+
+When an event is created by a recurring schedule (Plus/Pro plans), the payload includes additional fields:
+
+```json
+{
+  "event": "event.created",
+  "data": {
+    "event": {
+      "id": "abc123",
+      "name": "Friday Movie Night",
+      "status": "submitting",
+      "is_recurring": true,
+      "schedule_id": "sch-456",
+      "recurrence_cron": "0 18 * * 5",
+      "event_time": "2026-03-07T18:00:00Z",
+      "submission_deadline": "2026-03-07T17:00:00Z",
+      "voting_deadline": "2026-03-07T18:00:00Z"
+    }
+  }
+}
+```
+
+Use `is_recurring` to detect scheduled events vs manually created ones.
+
+### Example: Create Calendar Event from Recurring Pikarama Event
+
+1. **Pikarama Trigger** → Events: "Event Created"
+2. **IF Node** → Condition: `{{ $json.data.event.is_recurring }}` equals `true`
+3. **Google Calendar Node**:
+   - Summary: `{{ $json.data.event.name }}`
+   - Start: `{{ $json.data.event.event_time }}`
+   - Description: "Pikarama decision time! Submit your picks."
+
 ### Example: Notify Slack When Event Completes
 
 1. **Pikarama Trigger** → Events: "Event Closed"
