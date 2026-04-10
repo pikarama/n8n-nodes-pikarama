@@ -71,6 +71,7 @@ The **Pikarama Trigger** node lets you receive real-time webhook events from Pik
 |-------|-------------|
 | **Event Created** | Fires when a new event or poll is created |
 | **Event Closed** | Fires when an event is completed (winner chosen) |
+| **Event Cancelled** | Fires when an event is cancelled |
 | **Vote Cast** | Fires when someone votes |
 | **Submission Added** | Fires when someone submits a pick |
 
@@ -102,7 +103,9 @@ When an event is created by a recurring schedule (Plus/Pro plans), the payload i
       "status": "submitting",
       "is_recurring": true,
       "schedule_id": "sch-456",
-      "recurrence_cron": "0 18 * * 5",
+      "recurrence_rrule": "FREQ=WEEKLY;BYDAY=FR",
+      "recurrence_dtstart": "2026-01-02T18:00:00Z",
+      "recurrence_timezone": "America/New_York",
       "event_time": "2026-03-07T18:00:00Z",
       "submission_deadline": "2026-03-07T17:00:00Z",
       "voting_deadline": "2026-03-07T18:00:00Z"
@@ -111,7 +114,7 @@ When an event is created by a recurring schedule (Plus/Pro plans), the payload i
 }
 ```
 
-Use `is_recurring` to detect scheduled events vs manually created ones.
+Use `is_recurring` to detect scheduled events vs manually created ones. The `recurrence_rrule` field follows the [RFC 5545 RRULE](https://icalendar.org/iCalendar-RFC-5545/3-8-5-3-recurrence-rule.html) format.
 
 ### Example: Create Calendar Event from Recurring Pikarama Event
 
