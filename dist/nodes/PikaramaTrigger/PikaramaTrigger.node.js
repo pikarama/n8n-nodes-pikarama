@@ -14,7 +14,7 @@ class PikaramaTrigger {
             icon: 'file:pikarama.svg',
             group: ['trigger'],
             version: 1,
-            description: 'Receive webhook events from Pikarama (event.created, event.closed, event.voted, submission.added)',
+            description: 'Receive webhook events from Pikarama (event.created, event.closed, event.cancelled, event.voted, submission.added)',
             defaults: {
                 name: 'Pikarama Trigger',
             },
@@ -43,6 +43,7 @@ class PikaramaTrigger {
                     options: [
                         { name: 'Event Created', value: 'event.created', description: 'Triggered when a new event is created' },
                         { name: 'Event Closed', value: 'event.closed', description: 'Triggered when an event is completed' },
+                        { name: 'Event Cancelled', value: 'event.cancelled', description: 'Triggered when an event is cancelled' },
                         { name: 'Vote Cast', value: 'event.voted', description: 'Triggered when a vote is cast' },
                         { name: 'Submission Added', value: 'submission.added', description: 'Triggered when a submission is added' },
                     ],
