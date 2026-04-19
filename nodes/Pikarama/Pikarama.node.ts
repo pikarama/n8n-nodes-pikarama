@@ -148,6 +148,20 @@ export class Pikarama implements INodeType {
 				placeholder: 'Add option',
 				description: 'Predefined options for the poll (minimum 2)',
 			},
+			{
+				displayName: 'Suggestions',
+				name: 'suggestions',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				displayOptions: {
+					show: { resource: ['event'], operation: ['create'], isPoll: [false] },
+				},
+				default: [],
+				placeholder: 'Add suggestion',
+				description: 'Optional list of initial suggestions for the event',
+			},
 
 			// Event: Get - use dropdown
 			{
@@ -459,6 +473,7 @@ export class Pikarama implements INodeType {
 						method = 'POST';
 						const isPoll = this.getNodeParameter('isPoll', i) as boolean;
 						const attendees = this.getNodeParameter('attendees', i, []) as string[];
+						const suggestions = this.getNodeParameter('suggestions', i, []) as string[];
 						body = {
 							topicId: this.getNodeParameter('topicId', i) as string,
 							name: this.getNodeParameter('name', i) as string,
@@ -469,6 +484,8 @@ export class Pikarama implements INodeType {
 						}
 						if (isPoll) {
 							body.pollOptions = this.getNodeParameter('pollOptions', i) as string[];
+						} else if (suggestions.length > 0) {
+							body.suggestions = suggestions;
 						}
 					} else if (operation === 'get') {
 						const eventId = this.getNodeParameter('eventId', i) as string;
