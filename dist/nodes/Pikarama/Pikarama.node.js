@@ -140,6 +140,20 @@ class Pikarama {
                     placeholder: 'Add option',
                     description: 'Predefined options for the poll (minimum 2)',
                 },
+                {
+                    displayName: 'Suggestions',
+                    name: 'suggestions',
+                    type: 'string',
+                    typeOptions: {
+                        multipleValues: true,
+                    },
+                    displayOptions: {
+                        show: { resource: ['event'], operation: ['create'], isPoll: [false] },
+                    },
+                    default: [],
+                    placeholder: 'Add suggestion',
+                    description: 'Optional list of initial suggestions for the event',
+                },
                 // Event: Get - use dropdown
                 {
                     displayName: 'Event',
@@ -416,6 +430,7 @@ class Pikarama {
                         method = 'POST';
                         const isPoll = this.getNodeParameter('isPoll', i);
                         const attendees = this.getNodeParameter('attendees', i, []);
+                        const suggestions = this.getNodeParameter('suggestions', i, []);
                         body = {
                             topicId: this.getNodeParameter('topicId', i),
                             name: this.getNodeParameter('name', i),
@@ -426,6 +441,9 @@ class Pikarama {
                         }
                         if (isPoll) {
                             body.pollOptions = this.getNodeParameter('pollOptions', i);
+                        }
+                        else if (suggestions.length > 0) {
+                            body.suggestions = suggestions;
                         }
                     }
                     else if (operation === 'get') {
