@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-pikarama",
-  "version": "1.4.0",
+  "version": "1.5.1",
   "description": "n8n community node for Pikarama - fair group decision making with karma-weighted voting",
   "keywords": [
     "n8n",
