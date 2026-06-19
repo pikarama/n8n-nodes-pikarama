@@ -32,10 +32,10 @@ To use this node, you need a Pikarama API token:
 
 | Operation | Description |
 |-----------|-------------|
-| **Create** | Create a new event or poll. Select group, topic, participants, and optionally create as poll with predefined options. |
+| **Create** | Create a new event or poll. Select group, topic, participants, optional event description, and optionally create as poll with predefined options and option descriptions. |
 | **Get** | Get details of a specific event |
 | **Get Many** | List events with status filters |
-| **Submit** | Submit one or more picks to an event (up to 3) |
+| **Submit** | Submit one or more picks to an event (up to 3), with optional per-pick descriptions |
 | **Vote** | Cast votes on submissions |
 | **Advance** | Advance event to next phase |
 | **Cancel** | Cancel an event |
@@ -151,13 +151,13 @@ Select specific participants or leave empty to include all group members:
 
 ### Poll Creation
 
-Create polls with predefined options — no karma changes, just simple voting:
+Create polls with predefined options — no karma changes, just simple voting. You can add a short event description and optional descriptions for each poll option.
 
 ![Create Poll](docs/images/create-poll.png)
 
 ### Multi-Submit Support
 
-Submit multiple picks at once (up to 3 per event).
+Submit multiple picks at once (up to 3 per event). Add optional descriptions when the title alone needs context.
 
 ## Example: Create a Weekly Lunch Poll
 
@@ -169,7 +169,9 @@ Submit multiple picks at once (up to 3 per event).
    - Topic: Select "Lunch" topic
    - Event Name: "Friday Lunch Spot?"
    - Is Poll: ✅
+   - Event Description: "Something nearby and quick enough for lunch break"
    - Poll Options: "Pizza", "Sushi", "Thai", "Burgers"
+   - Poll Option Descriptions: "Fast and cheap", "Quieter but farther", "Good vegetarian choices", "Best for picky eaters"
 
 ## Compatibility
 
