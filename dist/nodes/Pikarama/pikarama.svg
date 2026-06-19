@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="forest-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1A5F4A"/>
-      <stop offset="100%" stop-color="#0F2E23"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A5F"/>
+      <stop offset="100%" stop-color="#0F1D30"/>
     </linearGradient>
-    <linearGradient id="mango-fg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#F5A623"/>
-      <stop offset="100%" stop-color="#FFCC66"/>
+    <linearGradient id="fg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE"/>
+      <stop offset="100%" stop-color="#BAE6FD"/>
     </linearGradient>
   </defs>
-  <!-- Mango Tree color version -->
-  <circle cx="256" cy="256" r="250" fill="url(#forest-bg)"/>
-  <circle cx="256" cy="256" r="230" fill="url(#mango-fg)"/>
-  <circle cx="256" cy="256" r="220" fill="url(#forest-bg)"/>
-  <path d="M 256,36 A 220,220 0 0,1 256,476 A 110,110 0 0,1 256,256 A 110,110 0 0,0 256,36 Z" fill="url(#mango-fg)" stroke="url(#mango-fg)" stroke-width="2"/>
-  <path d="M 256,94 A 52,52 0 0,1 256,198 Z" fill="url(#mango-fg)"/>
+  <!-- Gradient version - circle only -->
+  <circle cx="256" cy="256" r="250" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="230" fill="url(#fg)"/>
+  <circle cx="256" cy="256" r="220" fill="url(#bg)"/>
+  <path d="M 256,36 A 220,220 0 0,1 256,476 A 110,110 0 0,1 256,256 A 110,110 0 0,0 256,36 Z" fill="url(#fg)" stroke="url(#fg)" stroke-width="2"/>
+  <path d="M 256,94 A 52,52 0 0,1 256,198 Z" fill="url(#fg)"/>
 </svg>
