@@ -109,6 +109,20 @@ export class Pikarama implements INodeType {
 				placeholder: 'Where should we eat tonight?',
 				description: 'The question or decision to make',
 			},
+			{
+				displayName: 'Event Description',
+				name: 'description',
+				type: 'string',
+				typeOptions: {
+					maxValue: 240,
+				},
+				displayOptions: {
+					show: { resource: ['event'], operation: ['create'] },
+				},
+				default: '',
+				placeholder: 'Short context for the decision',
+				description: 'Optional public context for the event, visible to group members',
+			},
 			// Participants selector (depends on group)
 			{
 				displayName: 'Participants',
@@ -147,6 +161,21 @@ export class Pikarama implements INodeType {
 				default: [],
 				placeholder: 'Add option',
 				description: 'Predefined options for the poll (minimum 2)',
+			},
+			{
+				displayName: 'Poll Option Descriptions',
+				name: 'pollOptionDescriptions',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+					maxValue: 120,
+				},
+				displayOptions: {
+					show: { resource: ['event'], operation: ['create'], isPoll: [true] },
+				},
+				default: [],
+				placeholder: 'Add option description',
+				description: 'Optional public descriptions matching poll options by position',
 			},
 			{
 				displayName: 'Suggestions',
@@ -222,6 +251,21 @@ export class Pikarama implements INodeType {
 				default: [],
 				placeholder: 'Add submission',
 				description: 'Your picks/submissions (up to 3)',
+			},
+			{
+				displayName: 'Submission Descriptions',
+				name: 'submissionDescriptions',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+					maxValue: 120,
+				},
+				displayOptions: {
+					show: { resource: ['event'], operation: ['submit'] },
+				},
+				default: [],
+				placeholder: 'Add submission description',
+				description: 'Optional public descriptions matching submission titles by position',
 			},
 
 			// Event: Vote - Submissions selector
@@ -474,16 +518,24 @@ export class Pikarama implements INodeType {
 						const isPoll = this.getNodeParameter('isPoll', i) as boolean;
 						const attendees = this.getNodeParameter('attendees', i, []) as string[];
 						const suggestions = this.getNodeParameter('suggestions', i, []) as string[];
+						const description = (this.getNodeParameter('description', i, '') as string).trim();
 						body = {
 							topicId: this.getNodeParameter('topicId', i) as string,
 							name: this.getNodeParameter('name', i) as string,
 							isPoll,
 						};
+						if (description) {
+							body.description = description;
+						}
 						if (attendees.length > 0) {
 							body.attendees = attendees;
 						}
 						if (isPoll) {
 							body.pollOptions = this.getNodeParameter('pollOptions', i) as string[];
+							const pollOptionDescriptions = (this.getNodeParameter('pollOptionDescriptions', i, []) as string[]).map((value) => value.trim());
+							if (pollOptionDescriptions.some(Boolean)) {
+								body.pollOptionDescriptions = pollOptionDescriptions;
+							}
 						} else if (suggestions.length > 0) {
 							body.suggestions = suggestions;
 						}
@@ -498,10 +550,15 @@ export class Pikarama implements INodeType {
 					} else if (operation === 'submit') {
 						const eventId = this.getNodeParameter('eventId', i) as string;
 						const titles = this.getNodeParameter('titles', i) as string[];
+						const descriptions = (this.getNodeParameter('submissionDescriptions', i, []) as string[]).map((value) => value.trim());
 						
 						// Submit each title separately and collect results
 						const submissions: Record<string, unknown>[] = [];
-						for (const title of titles) {
+						for (const [index, title] of titles.entries()) {
+							const payload: Record<string, unknown> = { title };
+							if (descriptions[index]) {
+								payload.description = descriptions[index];
+							}
 							const submitUrl = new URL(`/api/v1/events/${eventId}/submit`, baseUrl);
 							const submitResponse = await fetch(submitUrl.toString(), {
 								method: 'POST',
@@ -509,7 +566,7 @@ export class Pikarama implements INodeType {
 									'Authorization': `Bearer ${credentials.apiToken}`,
 									'Content-Type': 'application/json',
 								},
-								body: JSON.stringify({ title }),
+								body: JSON.stringify(payload),
 							});
 							const submitData = await submitResponse.json() as Record<string, unknown>;
 							if (!submitResponse.ok) {

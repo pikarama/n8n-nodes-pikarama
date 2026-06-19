@@ -101,6 +101,20 @@ class Pikarama {
                     placeholder: 'Where should we eat tonight?',
                     description: 'The question or decision to make',
                 },
+                {
+                    displayName: 'Event Description',
+                    name: 'description',
+                    type: 'string',
+                    typeOptions: {
+                        maxValue: 240,
+                    },
+                    displayOptions: {
+                        show: { resource: ['event'], operation: ['create'] },
+                    },
+                    default: '',
+                    placeholder: 'Short context for the decision',
+                    description: 'Optional public context for the event, visible to group members',
+                },
                 // Participants selector (depends on group)
                 {
                     displayName: 'Participants',
@@ -139,6 +153,21 @@ class Pikarama {
                     default: [],
                     placeholder: 'Add option',
                     description: 'Predefined options for the poll (minimum 2)',
+                },
+                {
+                    displayName: 'Poll Option Descriptions',
+                    name: 'pollOptionDescriptions',
+                    type: 'string',
+                    typeOptions: {
+                        multipleValues: true,
+                        maxValue: 120,
+                    },
+                    displayOptions: {
+                        show: { resource: ['event'], operation: ['create'], isPoll: [true] },
+                    },
+                    default: [],
+                    placeholder: 'Add option description',
+                    description: 'Optional public descriptions matching poll options by position',
                 },
                 {
                     displayName: 'Suggestions',
@@ -211,6 +240,21 @@ class Pikarama {
                     default: [],
                     placeholder: 'Add submission',
                     description: 'Your picks/submissions (up to 3)',
+                },
+                {
+                    displayName: 'Submission Descriptions',
+                    name: 'submissionDescriptions',
+                    type: 'string',
+                    typeOptions: {
+                        multipleValues: true,
+                        maxValue: 120,
+                    },
+                    displayOptions: {
+                        show: { resource: ['event'], operation: ['submit'] },
+                    },
+                    default: [],
+                    placeholder: 'Add submission description',
+                    description: 'Optional public descriptions matching submission titles by position',
                 },
                 // Event: Vote - Submissions selector
                 {
@@ -431,16 +475,24 @@ class Pikarama {
                         const isPoll = this.getNodeParameter('isPoll', i);
                         const attendees = this.getNodeParameter('attendees', i, []);
                         const suggestions = this.getNodeParameter('suggestions', i, []);
+                        const description = this.getNodeParameter('description', i, '').trim();
                         body = {
                             topicId: this.getNodeParameter('topicId', i),
                             name: this.getNodeParameter('name', i),
                             isPoll,
                         };
+                        if (description) {
+                            body.description = description;
+                        }
                         if (attendees.length > 0) {
                             body.attendees = attendees;
                         }
                         if (isPoll) {
                             body.pollOptions = this.getNodeParameter('pollOptions', i);
+                            const pollOptionDescriptions = this.getNodeParameter('pollOptionDescriptions', i, []).map((value) => value.trim());
+                            if (pollOptionDescriptions.some(Boolean)) {
+                                body.pollOptionDescriptions = pollOptionDescriptions;
+                            }
                         }
                         else if (suggestions.length > 0) {
                             body.suggestions = suggestions;
@@ -459,9 +511,14 @@ class Pikarama {
                     else if (operation === 'submit') {
                         const eventId = this.getNodeParameter('eventId', i);
                         const titles = this.getNodeParameter('titles', i);
+                        const descriptions = this.getNodeParameter('submissionDescriptions', i, []).map((value) => value.trim());
                         // Submit each title separately and collect results
                         const submissions = [];
-                        for (const title of titles) {
+                        for (const [index, title] of titles.entries()) {
+                            const payload = { title };
+                            if (descriptions[index]) {
+                                payload.description = descriptions[index];
+                            }
                             const submitUrl = new URL(`/api/v1/events/${eventId}/submit`, baseUrl);
                             const submitResponse = await fetch(submitUrl.toString(), {
                                 method: 'POST',
@@ -469,7 +526,7 @@ class Pikarama {
                                     'Authorization': `Bearer ${credentials.apiToken}`,
                                     'Content-Type': 'application/json',
                                 },
-                                body: JSON.stringify({ title }),
+                                body: JSON.stringify(payload),
                             });
                             const submitData = await submitResponse.json();
                             if (!submitResponse.ok) {
